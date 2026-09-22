@@ -29,13 +29,13 @@ const tools = [
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
   </head>
-  <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
-    <header class="border-b border-slate-200 bg-white">
+  <body class="min-h-screen flex flex-col bg-stone-50 text-zinc-900">
+    <header class="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur">
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-        <a href="/" class="font-bold text-lg text-indigo-700">TextKit</a>
-        <nav class="hidden sm:flex gap-4 text-sm text-slate-600">
+        <a href="/" class="font-bold text-lg tracking-tight text-zinc-900">TextKit<span class="text-emerald-600">.</span></a>
+        <nav class="hidden sm:flex gap-4 text-sm text-zinc-600">
           {tools.map((t) => (
-            <a href={t.href} class="hover:text-indigo-700">{t.label}</a>
+            <a href={t.href} class="hover:text-zinc-900">{t.label}</a>
           ))}
         </nav>
       </div>
@@ -45,11 +45,11 @@ const tools = [
       <slot />
     </main>
 
-    <footer class="border-t border-slate-200 bg-white">
-      <div class="max-w-3xl mx-auto px-4 py-6 text-sm text-slate-500 flex flex-wrap gap-x-6 gap-y-2">
+    <footer class="border-t border-zinc-200 bg-white">
+      <div class="max-w-3xl mx-auto px-4 py-6 text-sm text-zinc-500 flex flex-wrap gap-x-6 gap-y-2">
         <span>© 2026 TextKit — free tools that run entirely in your browser.</span>
         {tools.map((t) => (
-          <a href={t.href} class="hover:text-indigo-700">{t.label}</a>
+          <a href={t.href} class="hover:text-emerald-700">{t.label}</a>
         ))}
       </div>
     </footer>

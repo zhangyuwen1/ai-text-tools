@@ -7,7 +7,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="Sort any list alphabetically or by length, remove duplicate lines, trim whitespace, and delete empty lines — free, instant, and private. Runs entirely in your browser."
 >
   <h1 class="text-3xl font-extrabold tracking-tight">Text Sorter</h1>
-  <p class="mt-3 text-slate-600 leading-relaxed">
+  <p class="mt-3 text-zinc-600 leading-relaxed">
     Sort any list alphabetically or by length, remove duplicate lines, trim whitespace, and
     delete empty lines — free, instant, and private. Everything runs in your browser;
     nothing is uploaded.
@@ -18,16 +18,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       id="input"
       rows="10"
       placeholder="Paste one item per line…"
-      class="w-full rounded-xl border border-slate-300 p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
+      class="w-full rounded-xl border border-zinc-300 p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"></textarea>
 
     <div class="mt-3 flex flex-wrap gap-2">
-      <button data-op="az" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort A → Z</button>
-      <button data-op="za" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort Z → A</button>
-      <button data-op="len" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort by length</button>
-      <button data-op="dedupe" class="rounded-lg bg-slate-700 px-3 py-2 text-sm font-medium text-white hover:bg-slate-600">Remove duplicates</button>
-      <button data-op="clean" class="rounded-lg bg-slate-700 px-3 py-2 text-sm font-medium text-white hover:bg-slate-600">Trim + drop empty lines</button>
-      <button data-op="reverse" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-indigo-400 bg-white">Reverse order</button>
-      <button id="copy" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-indigo-400 bg-white">Copy result</button>
+      <button data-op="az" class="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700">Sort A → Z</button>
+      <button data-op="za" class="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700">Sort Z → A</button>
+      <button data-op="len" class="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700">Sort by length</button>
+      <button data-op="dedupe" class="rounded-lg bg-white border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900">Remove duplicates</button>
+      <button data-op="clean" class="rounded-lg bg-white border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900">Trim + drop empty lines</button>
+      <button data-op="reverse" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900 bg-white">Reverse order</button>
+      <button id="copy" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900 bg-white">Copy result</button>
     </div>
 
     <textarea
@@ -35,28 +35,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       rows="10"
       readonly
       placeholder="Sorted text appears here…"
-      class="mt-4 w-full rounded-xl border border-slate-300 p-4 font-mono text-sm bg-slate-100"></textarea>
+      class="mt-4 w-full rounded-xl border border-zinc-300 p-4 font-mono text-sm bg-zinc-100"></textarea>
 
-    <p id="report" class="mt-2 text-sm text-slate-500"></p>
+    <p id="report" class="mt-2 text-sm text-zinc-500"></p>
   </div>
 
   <section class="mt-10">
     <h2 class="text-xl font-bold">FAQ</h2>
-    <div class="mt-3 space-y-4 text-slate-700">
+    <div class="mt-3 space-y-4 text-zinc-800">
       <div>
         <h3 class="font-semibold">Does sorting change letter case?</h3>
-        <p class="text-sm text-slate-600">No, your lines are returned exactly as typed. Sorting compares them case-insensitively, so "apple" and "Apple" sort next to each other.</p>
+        <p class="text-sm text-zinc-600">No, your lines are returned exactly as typed. Sorting compares them case-insensitively, so "apple" and "Apple" sort next to each other.</p>
       </div>
       <div>
         <h3 class="font-semibold">How does duplicate removal work?</h3>
-        <p class="text-sm text-slate-600">The first occurrence of each line is kept and later exact duplicates are dropped. Compare ignoring surrounding spaces by running "Trim + drop empty lines" first.</p>
+        <p class="text-sm text-zinc-600">The first occurrence of each line is kept and later exact duplicates are dropped. Compare ignoring surrounding spaces by running "Trim + drop empty lines" first.</p>
       </div>
     </div>
   </section>
 
-  <p class="mt-8 text-sm text-slate-500">
-    Also try: <a href="/remove-line-breaks" class="text-indigo-700 underline">remove line breaks</a> or
-    <a href="/case-converter" class="text-indigo-700 underline">case converter</a>.
+  <p class="mt-8 text-sm text-zinc-500">
+    Also try: <a href="/remove-line-breaks" class="text-emerald-700 underline">remove line breaks</a> or
+    <a href="/case-converter" class="text-emerald-700 underline">case converter</a>.
   </p>
 </BaseLayout>
 
