@@ -31,5 +31,6 @@ public/       静态资源（robots.txt 等）
 - [x] 正式域名上线：**https://textkitai.com**（腾讯云注册 + Cloudflare DNS/Pages，自动 CI/CD）
 - [ ] 环境变量配置：DEEPSEEK_API_KEY（Pages 控制台）→ 触发重新部署后 humanizer 生效
 - [ ] KV 绑定（RATE_LIMIT/SHARE）→ 限流与分享持久化
+- [x] Google Search Console：已验证所有权 + sitemap 已提交（2026-09-22，SEO 时钟启动）
 - [ ] 第 4 周：账户 + 支付（MoR）
 - [ ] 第 5 周：pSEO 长尾页生成器
