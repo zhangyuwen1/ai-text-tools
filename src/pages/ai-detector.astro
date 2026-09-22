@@ -5,7 +5,7 @@ import Icon from '../components/Icon.astro';
 
 <BaseLayout
   title="AI Detector — Check If Text Was Written by AI, Free"
-  description="Paste any text to see how likely it was written by AI. Free, no signup, with sentence-by-sentence highlighting and a shareable report. Runs instantly in your browser."
+  description="Paste text or drop multiple files to see how likely they were written by AI. Free, no signup, sentence-by-sentence highlighting and batch file scanning — files never leave your browser."
 >
   <div class="flex items-center gap-3">
     <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
@@ -19,7 +19,14 @@ import Icon from '../components/Icon.astro';
     estimate, not proof — use them as one signal, not a verdict.
   </p>
 
-  <div class="mt-6">
+  <!-- 模式切换 -->
+  <div class="mt-6 flex gap-1.5">
+    <button id="tab-paste" class="tab rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-semibold text-white">Paste text</button>
+    <button id="tab-batch" class="tab rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:border-zinc-900">Batch files</button>
+  </div>
+
+  <!-- ============ 面板 1：粘贴文本 ============ -->
+  <div id="panel-paste" class="mt-4">
     <textarea
       id="input"
       rows="10"
@@ -36,7 +43,35 @@ import Icon from '../components/Icon.astro';
     <p id="error" class="mt-2 hidden text-sm text-rose-600"></p>
   </div>
 
-  <!-- 结果区 -->
+  <!-- ============ 面板 2：批量文件 ============ -->
+  <div id="panel-batch" class="mt-4 hidden">
+    <div
+      id="dropzone"
+      class="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center cursor-pointer hover:border-zinc-900 transition">
+      <Icon name="file-text" class="h-8 w-8 mx-auto text-zinc-400" />
+      <p class="mt-3 font-medium">Drop .txt / .md files or a .zip here</p>
+      <p class="mt-1 text-sm text-zinc-500">or click to browse — up to 50 files, 1 MB each</p>
+      <input id="file-input" type="file" multiple accept=".txt,.md,.markdown,.text,.zip" class="hidden" />
+    </div>
+    <p class="mt-2 flex items-center gap-1.5 text-xs text-zinc-500">
+      <Icon name="lock" class="h-3.5 w-3.5 text-emerald-600" /> Batch scanning runs entirely in your browser — files are never uploaded.
+    </p>
+
+    <div id="batch-bar" class="mt-4 hidden flex-wrap items-center gap-3">
+      <span id="batch-count" class="text-sm font-medium"></span>
+      <button id="scan-all" class="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700">
+        <Icon name="scan" class="h-4 w-4" /><span>Scan all</span>
+      </button>
+      <button id="copy-report" class="hidden inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900 bg-white">
+        <Icon name="copy" class="h-4 w-4" /><span>Copy report</span>
+      </button>
+      <button id="clear-batch" class="text-sm text-zinc-500 hover:text-zinc-900 underline">Clear</button>
+    </div>
+    <p id="batch-error" class="mt-2 hidden text-sm text-rose-600"></p>
+    <div id="batch-list" class="mt-4 space-y-2"></div>
+  </div>
+
+  <!-- 结果区（粘贴模式） -->
   <div id="result" class="mt-8 hidden">
     <div class="rounded-2xl border border-zinc-200 bg-white p-6">
       <div class="flex flex-col sm:flex-row items-center gap-6">
@@ -81,23 +116,42 @@ import Icon from '../components/Icon.astro';
         <p class="text-sm text-zinc-600">No detector is definitive. Results are probabilistic and can misjudge formulaic human writing and lightly edited AI text. Treat the score as one signal, never as proof.</p>
       </div>
       <div>
-        <h3 class="font-semibold">Is my text stored?</h3>
-        <p class="text-sm text-zinc-600">Detection itself stores nothing. Text is saved for 7 days only if you click "Create share link", and only you get that link.</p>
+        <h3 class="font-semibold">Can I check multiple files at once?</h3>
+        <p class="text-sm text-zinc-600">Yes — switch to "Batch files" and drop any number of .txt or .md files, or a .zip containing them. Each file gets its own score. Batch scanning happens entirely in your browser, so nothing is uploaded and there's no daily limit.</p>
       </div>
       <div>
-        <h3 class="font-semibold">How many free checks do I get?</h3>
-        <p class="text-sm text-zinc-600">Five checks per day, up to 500 words each, no signup required.</p>
+        <h3 class="font-semibold">Is my text stored?</h3>
+        <p class="text-sm text-zinc-600">Detection itself stores nothing. Text is saved for 7 days only if you click "Create share link", and only you get that link. Batch files never leave your device at all.</p>
       </div>
     </div>
   </section>
 
   <p class="mt-8 text-sm text-zinc-500">
-    Flagged as AI? Try the <a href="/ai-humanizer" class="text-emerald-700 underline">AI Humanizer</a> (coming soon).
+    Flagged as AI? Try the <a href="/ai-humanizer" class="text-emerald-700 underline">AI Humanizer</a>.
     Also see <a href="/word-counter" class="text-emerald-700 underline">word counter</a>.
   </p>
 </BaseLayout>
 
 <script>
+  import { heuristicDetector } from '../lib/detect/heuristic';
+  import { unzipSync } from 'fflate';
+
+  // ============ Tab 切换 ============
+  const tabPaste = document.getElementById('tab-paste')!;
+  const tabBatch = document.getElementById('tab-batch')!;
+  const panelPaste = document.getElementById('panel-paste')!;
+  const panelBatch = document.getElementById('panel-batch')!;
+
+  function setTab(batch: boolean) {
+    tabPaste.className = 'tab rounded-lg border ' + (batch ? 'border-zinc-300 bg-white text-zinc-800 hover:border-zinc-900' : 'border-zinc-900 bg-zinc-900 text-white') + ' px-4 py-2 text-sm font-semibold';
+    tabBatch.className = 'tab rounded-lg border ' + (batch ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 bg-white text-zinc-800 hover:border-zinc-900') + ' px-4 py-2 text-sm font-semibold';
+    panelPaste.classList.toggle('hidden', batch);
+    panelBatch.classList.toggle('hidden', !batch);
+  }
+  tabPaste.addEventListener('click', () => setTab(false));
+  tabBatch.addEventListener('click', () => setTab(true));
+
+  // ============ 粘贴文本模式（原有逻辑） ============
   const input = document.getElementById('input') as HTMLTextAreaElement;
   const checkBtn = document.getElementById('check')!;
   const wordcount = document.getElementById('wordcount')!;
@@ -148,7 +202,6 @@ import Icon from '../components/Icon.astro';
         errorEl.classList.remove('hidden');
         return;
       }
-
       render(data);
     } catch {
       errorEl.textContent = 'Network error — please try again.';
@@ -156,9 +209,6 @@ import Icon from '../components/Icon.astro';
     } finally {
       label.textContent = old;
       checkBtn.removeAttribute('disabled');
-      if (typeof data !== 'undefined' && data?.remaining !== undefined) {
-        quota.textContent = `${data.remaining + 1 > 0 ? data.remaining : 0} of 5 free checks left today`;
-      }
     }
   });
 
@@ -173,7 +223,6 @@ import Icon from '../components/Icon.astro';
       flag: s.flag,
     }));
 
-    // 评分环
     const ring = document.getElementById('ring')!;
     const circumference = 2 * Math.PI * 52;
     ring.style.strokeDashoffset = String(circumference * (1 - data.score));
@@ -187,12 +236,10 @@ import Icon from '../components/Icon.astro';
     document.getElementById('meta')!.textContent = `${data.words} words · ${data.sentences.length} sentences`;
     quota.textContent = `${data.remaining} of 5 free checks left today`;
 
-    // 逐句高亮
     document.getElementById('sentences')!.innerHTML = lastSentences
       .map((s) => `<p class="rounded-r-lg px-3 py-2 ${FLAG_STYLE[s.flag] ?? ''}">${escapeHtml(s.text)}</p>`)
       .join('');
 
-    // 转化钩子：高分时显示人性化 CTA
     document.getElementById('cta')!.classList.toggle('hidden', data.score <= 0.7);
     document.getElementById('sharelink')!.classList.add('hidden');
 
@@ -220,10 +267,177 @@ import Icon from '../components/Icon.astro';
       await navigator.clipboard.writeText(`${location.origin}${data.url}`).catch(() => {});
       label.textContent = 'Copied!';
       setTimeout(() => (label.textContent = old), 1500);
-    } catch (err) {
+    } catch {
       label.textContent = 'Failed';
       setTimeout(() => (label.textContent = old), 1500);
     }
+  });
+
+  // ============ 批量文件模式（纯浏览器端） ============
+  const MAX_FILES = 50;
+  const MAX_FILE_BYTES = 1024 * 1024;
+  const TEXT_EXT = /\.(txt|md|markdown|text)$/i;
+
+  const dropzone = document.getElementById('dropzone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const batchBar = document.getElementById('batch-bar')!;
+  const batchCount = document.getElementById('batch-count')!;
+  const batchError = document.getElementById('batch-error')!;
+  const batchList = document.getElementById('batch-list')!;
+  const scanAllBtn = document.getElementById('scan-all')!;
+  const copyReportBtn = document.getElementById('copy-report')!;
+  const clearBtn = document.getElementById('clear-batch')!;
+
+  interface BatchFile { name: string; text: string; words: number; score?: number; label?: string; tooShort?: boolean }
+
+  let batchFiles: BatchFile[] = [];
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-zinc-900'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-zinc-900'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('border-zinc-900');
+    handleFiles(e.dataTransfer?.files);
+  });
+  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+  async function handleFiles(files: FileList | null | undefined) {
+    batchError.classList.add('hidden');
+    if (!files?.length) return;
+    const incoming = Array.from(files);
+
+    for (const f of incoming) {
+      if (batchFiles.length >= MAX_FILES) {
+        showBatchError(`Limit reached — max ${MAX_FILES} files.`);
+        break;
+      }
+      if (f.size > MAX_FILE_BYTES) {
+        showBatchError(`"${f.name}" skipped — larger than 1 MB.`);
+        continue;
+      }
+      if (f.name.toLowerCase().endsWith('.zip')) {
+        try {
+          const entries = unzipSync(new Uint8Array(await f.arrayBuffer()));
+          const decoder = new TextDecoder();
+          for (const [name, bytes] of Object.entries(entries)) {
+            if (name.startsWith('__MACOSX') || name.includes('/.') || !TEXT_EXT.test(name)) continue;
+            const text = decoder.decode(bytes).trim();
+            if (!text) continue;
+            if (batchFiles.length >= MAX_FILES) break;
+            batchFiles.push(makeFile(name.split('/').pop() ?? name, text));
+          }
+        } catch {
+          showBatchError(`"${f.name}" could not be unzipped.`);
+        }
+      } else if (TEXT_EXT.test(f.name)) {
+        const text = (await f.text()).trim();
+        if (text) batchFiles.push(makeFile(f.name, text));
+      } else {
+        showBatchError(`"${f.name}" skipped — only .txt / .md / .zip supported.`);
+      }
+    }
+
+    fileInput.value = '';
+    renderBatchList();
+  }
+
+  function makeFile(name: string, text: string): BatchFile {
+    const words = text.split(/\s+/).length;
+    return { name, text, words, tooShort: words < 50 };
+  }
+
+  function showBatchError(msg: string) {
+    batchError.textContent = msg;
+    batchError.classList.remove('hidden');
+  }
+
+  function renderBatchList() {
+    batchBar.classList.remove('hidden');
+    batchBar.classList.add('flex');
+    batchCount.textContent = `${batchFiles.length} file${batchFiles.length === 1 ? '' : 's'} loaded`;
+
+    batchList.innerHTML = batchFiles
+      .map((f, i) => {
+        const scoreCell = f.tooShort
+          ? '<span class="text-xs text-zinc-400">too short</span>'
+          : f.score === undefined
+            ? '<span class="text-xs text-zinc-400">—</span>'
+            : scoreBadge(f.score, f.label!);
+        return `
+        <div class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-2.5">
+          <div class="flex min-w-0 items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0 text-zinc-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            <span class="truncate text-sm font-medium">${escapeHtml(f.name)}</span>
+            <span class="shrink-0 text-xs text-zinc-400">${f.words} words</span>
+          </div>
+          <div class="shrink-0" id="bf-${i}">${scoreCell}</div>
+        </div>`;
+      })
+      .join('');
+  }
+
+  function scoreBadge(score: number, label: string): string {
+    const pct = Math.round(score * 100);
+    const tone =
+      label === 'ai'
+        ? 'bg-rose-50 text-rose-700'
+        : label === 'mixed'
+          ? 'bg-amber-50 text-amber-700'
+          : 'bg-emerald-50 text-emerald-700';
+    const verdict = label === 'ai' ? 'Likely AI' : label === 'mixed' ? 'Mixed' : 'Likely human';
+    return `<span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${tone}">${pct}% · ${verdict}</span>`;
+  }
+
+  scanAllBtn.addEventListener('click', async () => {
+    const label = scanAllBtn.querySelector('span')!;
+    const old = label.textContent;
+    label.textContent = 'Scanning…';
+    scanAllBtn.setAttribute('disabled', '');
+
+    let aiCount = 0;
+    let scored = 0;
+    for (let i = 0; i < batchFiles.length; i++) {
+      const f = batchFiles[i];
+      if (!f.tooShort) {
+        const r = await heuristicDetector.detect(f.text);
+        f.score = r.score;
+        f.label = r.score > 0.7 ? 'ai' : r.score >= 0.4 ? 'mixed' : 'human';
+        if (f.label === 'ai') aiCount++;
+        scored++;
+        // 逐个渲染，让进度可见
+        const cell = document.getElementById(`bf-${i}`);
+        if (cell) cell.innerHTML = scoreBadge(f.score, f.label);
+        await new Promise((r2) => setTimeout(r2, 10)); // 让 UI 呼吸
+      }
+    }
+
+    batchCount.textContent = `${batchFiles.length} files · ${scored} scored · ${aiCount} likely AI`;
+    copyReportBtn.classList.remove('hidden');
+    label.textContent = old;
+    scanAllBtn.removeAttribute('disabled');
+  });
+
+  copyReportBtn.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const lines = batchFiles.map((f) =>
+      f.tooShort
+        ? `${f.name} — too short`
+        : `${f.name} — ${Math.round((f.score ?? 0) * 100)}% (${f.label === 'ai' ? 'Likely AI' : f.label === 'mixed' ? 'Mixed' : 'Likely human'})`,
+    );
+    const report = `AI Batch Report — ${new Date().toISOString().slice(0, 10)}\n${lines.join('\n')}`;
+    await navigator.clipboard.writeText(report);
+    const label = btn.querySelector('span')!;
+    label.textContent = 'Copied!';
+    setTimeout(() => (label.textContent = 'Copy report'), 1500);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    batchFiles = [];
+    batchList.innerHTML = '';
+    batchBar.classList.add('hidden');
+    copyReportBtn.classList.add('hidden');
+    batchError.classList.add('hidden');
   });
 
   function escapeHtml(s: string): string {
