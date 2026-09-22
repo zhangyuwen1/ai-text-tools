@@ -296,6 +296,7 @@ import Icon from '../components/Icon.astro';
     label?: string;
     tooShort?: boolean;
     detail?: { high: number; mid: number; low: number; markers: string[] };
+    sentences?: { text: string; flag: string }[];
   }
 
   let batchFiles: BatchFile[] = [];
@@ -418,7 +419,7 @@ import Icon from '../components/Icon.astro';
         if (f.label === 'ai') aiCount++;
         scored++;
 
-        // 评分依据：句子分布 + 命中的 AI 高频词
+        // 评分依据：句子分布 + 命中的 AI 高频词 + 逐句明细（供详情展开）
         const counts = { high: 0, mid: 0, low: 0 };
         for (const s of r.sentences) counts[s.flag]++;
         const lower = f.text.toLowerCase();
@@ -429,14 +430,29 @@ import Icon from '../components/Icon.astro';
         }
         markerHits.sort((a, b) => b[1] - a[1]);
         f.detail = { ...counts, markers: markerHits.slice(0, 5).map(([m, n]) => (n > 1 ? `${m} ×${n}` : m)) };
+        f.sentences = r.sentences.map((s) => ({ text: f.text.slice(s.offset, s.offset + s.len).trim(), flag: s.flag }));
 
         // 逐个渲染，让进度可见
         const cell = document.getElementById(`bf-${i}`);
         if (cell) cell.innerHTML = scoreBadge(f.score, f.label);
         const detailEl = document.querySelector(`.bd-${i}`);
         if (detailEl && f.detail) {
-          detailEl.innerHTML = `${r.sentences.length} sentences · ${f.detail.high} high / ${f.detail.mid} mid / ${f.detail.low} low` +
-            (f.detail.markers.length ? ` · AI words found: ${escapeHtml(f.detail.markers.join(', '))}` : ' · no AI marker words found');
+          const evidence =
+            `${r.sentences.length} sentences · ${f.detail.high} high / ${f.detail.mid} mid / ${f.detail.low} low` +
+            (f.detail.markers.length ? ` · AI words: ${f.detail.markers.join(', ')}` : ' · no AI marker words');
+          const sentList = (f.sentences ?? [])
+            .map((s) => `<p class="rounded-r-lg px-2.5 py-1.5 leading-relaxed ${FLAG_STYLE[s.flag] ?? ''}">${escapeHtml(s.text)}</p>`)
+            .join('');
+          detailEl.innerHTML = `
+            <p class="mb-2">${evidence}</p>
+            <div class="max-h-64 space-y-1.5 overflow-y-auto pr-1 text-xs">${sentList}</div>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <button data-share="${i}" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-800 hover:border-zinc-900 bg-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+                <span>Create share link</span>
+              </button>
+              <a data-sharelink="${i}" href="#" target="_blank" class="hidden break-all text-emerald-700 underline"></a>
+            </div>`;
         }
         await new Promise((r2) => setTimeout(r2, 10)); // 让 UI 呼吸
       }
@@ -447,6 +463,42 @@ import Icon from '../components/Icon.astro';
     copyReportBtn.classList.remove('hidden');
     label.textContent = old;
     scanAllBtn.removeAttribute('disabled');
+  });
+
+  // 批量文件分享（委托：详情面板内的 share 按钮）
+  batchList.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-share]') as HTMLButtonElement | null;
+    if (!btn) return;
+    e.stopPropagation();
+    const i = Number(btn.dataset.share);
+    const f = batchFiles[i];
+    if (!f?.score || !f.sentences) return;
+
+    const label = btn.querySelector('span')!;
+    const old = label.textContent;
+    label.textContent = 'Creating…';
+    btn.setAttribute('disabled', '');
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: f.text, score: f.score, sentences: f.sentences }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message);
+      const link = document.querySelector(`[data-sharelink="${i}"]`) as HTMLAnchorElement;
+      link.href = data.url;
+      link.textContent = `${location.origin}${data.url}`;
+      link.classList.remove('hidden');
+      await navigator.clipboard.writeText(`${location.origin}${data.url}`).catch(() => {});
+      label.textContent = 'Copied!';
+      setTimeout(() => (label.textContent = old), 1500);
+    } catch {
+      label.textContent = 'Failed';
+      setTimeout(() => (label.textContent = old), 1500);
+    } finally {
+      btn.removeAttribute('disabled');
+    }
   });
 
   copyReportBtn.addEventListener('click', async (e) => {
