@@ -1,0 +1,85 @@
+---
+// 长尾落地页动态路由：URL 即关键词（/ai-detector-for-teachers 等）
+// 数据源 src/data/longtail.ts；七要件规范见 05-SEO 手册 §3
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LongtailScanner from '../components/LongtailScanner.astro';
+import { longtailSeeds } from '../data/longtail';
+
+export function getStaticPaths() {
+  return longtailSeeds.map((seed) => ({ params: { slug: seed.slug }, props: { seed } }));
+}
+
+const { seed } = Astro.props;
+
+const lead =
+  seed.tool === 'detect'
+    ? 'Paste any text below to see how likely it was written by AI. Free, no signup, scored instantly in your browser.'
+    : 'Paste AI-generated text below for an instant AI score — then take it to the humanizer and watch the score drop. Free, no signup.';
+
+const description = `${lead} ${seed.audience}`.slice(0, 158);
+
+// 相关链接解析为主工具名或长尾页 H1
+const knownLabels: Record<string, string> = {
+  '/ai-detector': 'AI Detector',
+  '/ai-humanizer': 'AI Humanizer',
+  '/word-counter': 'Word Counter',
+  '/case-converter': 'Case Converter',
+  '/remove-line-breaks': 'Remove Line Breaks',
+  '/text-sorter': 'Text Sorter',
+  '/paraphrasing-tool': 'Paraphrasing Tool',
+  '/text-summarizer': 'Text Summarizer',
+};
+const labelFor = (href: string) =>
+  knownLabels[href] ?? longtailSeeds.find((s) => `/${s.slug}` === href)?.h1 ?? href;
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: seed.faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const appJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: seed.h1,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout title={`${seed.h1} — Free, No Signup`} description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+  <script type="application/ld+json" set:html={JSON.stringify(appJsonLd)} />
+  <h1 class="text-3xl font-extrabold tracking-tight">{seed.h1}</h1>
+  <p class="mt-3 text-zinc-600 leading-relaxed">
+    {lead} {seed.audience}
+  </p>
+
+  <LongtailScanner tool={seed.tool} />
+
+  <section class="mt-10">
+    <h2 class="text-xl font-bold">FAQ</h2>
+    <div class="mt-3 space-y-4 text-zinc-800">
+      {seed.faqs.map((f) => (
+        <div>
+          <h3 class="font-semibold">{f.q}</h3>
+          <p class="text-sm text-zinc-600">{f.a}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <p class="mt-8 text-sm text-zinc-500">
+    Related: {seed.related.map((href, i) => (
+      <Fragment>
+        {i > 0 && ' · '}
+        <a href={href} class="text-emerald-700 underline">{labelFor(href)}</a>
+      </Fragment>
+    ))}
+  </p>
+</BaseLayout>

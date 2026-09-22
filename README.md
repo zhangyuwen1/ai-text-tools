@@ -27,5 +27,6 @@ public/       静态资源（robots.txt 等）
 - [x] 第 2 周核心：AI 检测器全链路（启发式 provider + 限流 + 分享页；正式供应商接入待账号）
 - [x] 第 3 周核心：AI 人性化全链路（v2 提示词 + 四模式三档强度 + 闭环演示 0.92→0.16 实测）
 - [x] 第 3 周收尾：/paraphrasing-tool（三风格）、/text-summarizer —— 矩阵工具满 8 个
+- [x] 第 5 周提前完成：pSEO 长尾页引擎（30 页：检测 15 + 人性化 15，`src/data/longtail.ts` 加条目即扩页）
 - [ ] 第 4 周：账户 + 支付（MoR）
 - [ ] 第 5 周：pSEO 长尾页生成器
