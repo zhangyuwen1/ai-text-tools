@@ -28,7 +28,7 @@ public/       静态资源（robots.txt 等）
 - [x] 第 3 周核心：AI 人性化全链路（v2 提示词 + 四模式三档强度 + 闭环演示 0.92→0.16 实测）
 - [x] 第 3 周收尾：/paraphrasing-tool（三风格）、/text-summarizer —— 矩阵工具满 8 个
 - [x] 第 5 周提前完成：pSEO 长尾页引擎（30 页：检测 15 + 人性化 15，`src/data/longtail.ts` 加条目即扩页）
-- [x] 部署上线：https://ai-text-tools-6mn.pages.dev（Cloudflare Pages，自动 CI/CD 已接 GitHub）
+- [x] 正式域名上线：**https://textkitai.com**（腾讯云注册 + Cloudflare DNS/Pages，自动 CI/CD）
 - [ ] 环境变量配置：DEEPSEEK_API_KEY（Pages 控制台）→ 触发重新部署后 humanizer 生效
 - [ ] KV 绑定（RATE_LIMIT/SHARE）→ 限流与分享持久化
 - [ ] 第 4 周：账户 + 支付（MoR）
