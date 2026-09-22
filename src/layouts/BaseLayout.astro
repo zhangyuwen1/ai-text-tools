@@ -8,6 +8,13 @@ interface Props {
 
 const { title, description } = Astro.props;
 
+// 顶部导航只放旗舰工具 + 总入口；完整清单在页脚（8 项全塞导航会换行）
+const navItems = [
+  { href: '/ai-detector', label: 'AI Detector' },
+  { href: '/ai-humanizer', label: 'AI Humanizer' },
+  { href: '/#tools', label: 'All Tools' },
+];
+
 const tools = [
   { href: '/ai-detector', label: 'AI Detector' },
   { href: '/ai-humanizer', label: 'AI Humanizer' },
@@ -37,9 +44,9 @@ const tools = [
     <header class="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur">
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
         <a href="/" class="font-bold text-lg tracking-tight text-zinc-900">TextKit<span class="text-emerald-600">.</span></a>
-        <nav class="hidden sm:flex gap-4 text-sm text-zinc-600">
-          {tools.map((t) => (
-            <a href={t.href} class="hover:text-zinc-900">{t.label}</a>
+        <nav class="flex gap-4 text-sm text-zinc-600">
+          {navItems.map((t) => (
+            <a href={t.href} class="hover:text-zinc-900 whitespace-nowrap">{t.label}</a>
           ))}
         </nav>
       </div>
