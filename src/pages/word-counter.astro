@@ -1,12 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
 
 <BaseLayout
   title="Word Counter — Count Words, Characters & Reading Time Free"
   description="Paste any text to count words, characters, sentences, paragraphs, reading time, and keyword density instantly. Free, no signup — your text never leaves your browser."
 >
-  <h1 class="text-3xl font-extrabold tracking-tight">Word Counter</h1>
+  <div class="flex items-center gap-3">
+    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+      <Icon name="align-left" class="h-6 w-6" />
+    </span>
+    <h1 class="text-3xl font-extrabold tracking-tight">Word Counter</h1>
+  </div>
   <p class="mt-3 text-zinc-600 leading-relaxed">
     Paste or type your text below to count words, characters, sentences, and reading time
     instantly. Free, no signup, and your text never leaves your browser. Works great for

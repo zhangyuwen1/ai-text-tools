@@ -1,5 +1,37 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+
+const tools = [
+  {
+    href: '/word-counter',
+    title: 'Word Counter',
+    desc: 'Count words, characters, sentences, paragraphs, reading time, and keyword density.',
+    icon: 'align-left',
+    chip: 'bg-emerald-50 text-emerald-600',
+  },
+  {
+    href: '/case-converter',
+    title: 'Case Converter',
+    desc: 'Convert to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case, or kebab-case.',
+    icon: 'type',
+    chip: 'bg-violet-50 text-violet-600',
+  },
+  {
+    href: '/remove-line-breaks',
+    title: 'Remove Line Breaks',
+    desc: 'Strip all newlines, delete blank lines, or replace line breaks with spaces in one click.',
+    icon: 'wrap-text',
+    chip: 'bg-amber-50 text-amber-600',
+  },
+  {
+    href: '/text-sorter',
+    title: 'Text Sorter',
+    desc: 'Sort lines A–Z or by length, remove duplicates, trim whitespace, and drop empty lines.',
+    icon: 'arrow-down-up',
+    chip: 'bg-sky-50 text-sky-600',
+  },
+];
 ---
 
 <BaseLayout
@@ -8,37 +40,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 >
   <section>
     <h1 class="text-3xl font-extrabold tracking-tight">Free Online Text Tools</h1>
-    <p class="mt-3 text-zinc-600 leading-relaxed">
+    <p class="mt-3 text-zinc-600 leading-relaxed max-w-xl">
       Paste your text and get results instantly — count words, convert letter case, clean up
-      line breaks, or sort lists. Every tool is free, needs no signup, and runs entirely in
-      your browser, so your text never leaves your device.
+      line breaks, or sort lists. Every tool runs entirely in your browser.
     </p>
+
+    <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-600">
+      <span class="inline-flex items-center gap-1.5"><Icon name="zap" class="h-4 w-4 text-emerald-600" /> Instant results</span>
+      <span class="inline-flex items-center gap-1.5"><Icon name="lock" class="h-4 w-4 text-emerald-600" /> Private — text never leaves your browser</span>
+      <span class="inline-flex items-center gap-1.5"><Icon name="check" class="h-4 w-4 text-emerald-600" /> Free, no signup</span>
+    </div>
   </section>
 
   <section class="mt-8 grid gap-4 sm:grid-cols-2">
-    <a href="/word-counter" class="block rounded-2xl bg-white border border-zinc-200 p-6 hover:border-zinc-900 transition">
-      <h2 class="font-bold text-lg">Word Counter</h2>
-      <p class="mt-1 text-sm text-zinc-600">Count words, characters, sentences, paragraphs, reading time, and keyword density.</p>
-    </a>
-    <a href="/case-converter" class="block rounded-2xl bg-white border border-zinc-200 p-6 hover:border-zinc-900 transition">
-      <h2 class="font-bold text-lg">Case Converter</h2>
-      <p class="mt-1 text-sm text-zinc-600">Convert to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case, or kebab-case.</p>
-    </a>
-    <a href="/remove-line-breaks" class="block rounded-2xl bg-white border border-zinc-200 p-6 hover:border-zinc-900 transition">
-      <h2 class="font-bold text-lg">Remove Line Breaks</h2>
-      <p class="mt-1 text-sm text-zinc-600">Strip all newlines, delete blank lines, or replace line breaks with spaces in one click.</p>
-    </a>
-    <a href="/text-sorter" class="block rounded-2xl bg-white border border-zinc-200 p-6 hover:border-zinc-900 transition">
-      <h2 class="font-bold text-lg">Text Sorter</h2>
-      <p class="mt-1 text-sm text-zinc-600">Sort lines A–Z or by length, remove duplicates, trim whitespace, and drop empty lines.</p>
-    </a>
-  </section>
+    {tools.map((t) => (
+      <a href={t.href} class="group block rounded-2xl bg-white border border-zinc-200 p-6 hover:border-zinc-900 transition">
+        <div class="flex items-start justify-between">
+          <span class={`flex h-11 w-11 items-center justify-center rounded-xl ${t.chip}`}>
+            <Icon name={t.icon} class="h-6 w-6" />
+          </span>
+          <Icon name="arrow-right" class="h-4 w-4 mt-1 text-zinc-300 group-hover:text-zinc-900 transition" />
+        </div>
+        <h2 class="mt-4 font-bold text-lg">{t.title}</h2>
+        <p class="mt-1 text-sm text-zinc-600">{t.desc}</p>
+      </a>
+    ))}
 
-  <section class="mt-10 text-sm text-zinc-500">
-    <p>
-      More AI text tools are on the way: an AI detector and an AI text humanizer.
-      Everything here stays free and private — try the
-      <a href="/word-counter" class="text-emerald-700 underline">word counter</a> to see.
-    </p>
+    <div class="rounded-2xl border border-dashed border-zinc-300 p-6">
+      <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
+        <Icon name="sparkles" class="h-6 w-6" />
+      </span>
+      <h2 class="mt-4 font-bold text-lg text-zinc-400">AI Detector & AI Humanizer</h2>
+      <p class="mt-1 text-sm text-zinc-400">Coming soon — check any text for AI, then make it sound human.</p>
+    </div>
   </section>
 </BaseLayout>
