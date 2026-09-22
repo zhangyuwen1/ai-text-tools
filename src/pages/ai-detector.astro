@@ -133,7 +133,7 @@ import Icon from '../components/Icon.astro';
 </BaseLayout>
 
 <script>
-  import { heuristicDetector } from '../lib/detect/heuristic';
+  import { heuristicDetector, AI_MARKERS } from '../lib/detect/heuristic';
   import { unzipSync } from 'fflate';
 
   // ============ Tab 切换 ============
@@ -288,7 +288,15 @@ import Icon from '../components/Icon.astro';
   const copyReportBtn = document.getElementById('copy-report')!;
   const clearBtn = document.getElementById('clear-batch')!;
 
-  interface BatchFile { name: string; text: string; words: number; score?: number; label?: string; tooShort?: boolean }
+  interface BatchFile {
+    name: string;
+    text: string;
+    words: number;
+    score?: number;
+    label?: string;
+    tooShort?: boolean;
+    detail?: { high: number; mid: number; low: number; markers: string[] };
+  }
 
   let batchFiles: BatchFile[] = [];
 
@@ -365,13 +373,16 @@ import Icon from '../components/Icon.astro';
             ? '<span class="text-xs text-zinc-400">—</span>'
             : scoreBadge(f.score, f.label!);
         return `
-        <div class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-2.5">
-          <div class="flex min-w-0 items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0 text-zinc-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-            <span class="truncate text-sm font-medium">${escapeHtml(f.name)}</span>
-            <span class="shrink-0 text-xs text-zinc-400">${f.words} words</span>
+        <div class="rounded-xl border border-zinc-200 bg-white px-4 py-2.5" data-batch-row="${i}">
+          <div class="flex cursor-pointer items-center justify-between gap-3" onclick="this.parentElement.querySelector('.bd-${i}').classList.toggle('hidden')">
+            <div class="flex min-w-0 items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0 text-zinc-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+              <span class="truncate text-sm font-medium">${escapeHtml(f.name)}</span>
+              <span class="shrink-0 text-xs text-zinc-400">${f.words} words</span>
+            </div>
+            <div class="shrink-0" id="bf-${i}">${scoreCell}</div>
           </div>
-          <div class="shrink-0" id="bf-${i}">${scoreCell}</div>
+          <div class="bd-${i} hidden mt-2 border-t border-zinc-100 pt-2 text-xs text-zinc-500"></div>
         </div>`;
       })
       .join('');
@@ -395,6 +406,7 @@ import Icon from '../components/Icon.astro';
     label.textContent = 'Scanning…';
     scanAllBtn.setAttribute('disabled', '');
 
+    const t0 = performance.now();
     let aiCount = 0;
     let scored = 0;
     for (let i = 0; i < batchFiles.length; i++) {
@@ -405,14 +417,33 @@ import Icon from '../components/Icon.astro';
         f.label = r.score > 0.7 ? 'ai' : r.score >= 0.4 ? 'mixed' : 'human';
         if (f.label === 'ai') aiCount++;
         scored++;
+
+        // 评分依据：句子分布 + 命中的 AI 高频词
+        const counts = { high: 0, mid: 0, low: 0 };
+        for (const s of r.sentences) counts[s.flag]++;
+        const lower = f.text.toLowerCase();
+        const markerHits: [string, number][] = [];
+        for (const m of AI_MARKERS) {
+          const n = lower.split(m).length - 1;
+          if (n > 0) markerHits.push([m, n]);
+        }
+        markerHits.sort((a, b) => b[1] - a[1]);
+        f.detail = { ...counts, markers: markerHits.slice(0, 5).map(([m, n]) => (n > 1 ? `${m} ×${n}` : m)) };
+
         // 逐个渲染，让进度可见
         const cell = document.getElementById(`bf-${i}`);
         if (cell) cell.innerHTML = scoreBadge(f.score, f.label);
+        const detailEl = document.querySelector(`.bd-${i}`);
+        if (detailEl && f.detail) {
+          detailEl.innerHTML = `${r.sentences.length} sentences · ${f.detail.high} high / ${f.detail.mid} mid / ${f.detail.low} low` +
+            (f.detail.markers.length ? ` · AI words found: ${escapeHtml(f.detail.markers.join(', '))}` : ' · no AI marker words found');
+        }
         await new Promise((r2) => setTimeout(r2, 10)); // 让 UI 呼吸
       }
     }
+    const elapsed = Math.max(1, Math.round(performance.now() - t0));
 
-    batchCount.textContent = `${batchFiles.length} files · ${scored} scored · ${aiCount} likely AI`;
+    batchCount.textContent = `${batchFiles.length} files · ${scored} scored · ${aiCount} likely AI · ${elapsed} ms (scanned locally)`;
     copyReportBtn.classList.remove('hidden');
     label.textContent = old;
     scanAllBtn.removeAttribute('disabled');

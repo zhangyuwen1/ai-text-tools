@@ -5,7 +5,7 @@
 // 定位是"估计"而非"判决"，UI 必须如实标注（PRD 风险表：概率参考，非定论）。
 import type { DetectorProvider, DetectResult, SentenceFlag } from './types';
 
-const AI_MARKERS = [
+export const AI_MARKERS = [
   'delve', 'moreover', 'furthermore', 'however,', 'additionally', 'therefore',
   'utilize', 'utilizes', 'leverag', 'foster', 'robust', 'seamless', 'tapestry',
   'landscape', 'crucial', 'pivotal', 'testament', 'multifaceted', 'in today',
