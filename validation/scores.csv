@@ -1,0 +1,28 @@
+file,before_score,after_score,detector_used,meaning_intact,notes
+01-academic-history.txt,100,18,zerogpt.com,Y,
+02-academic-literature.txt,100,22,zerogpt.com,Y,
+03-blog-productivity.txt,100,33,zerogpt.com,Y,
+04-blog-ai-marketing.txt,100,0,zerogpt.com,Y,
+05-product-saas.txt,100,34,zerogpt.com,Y,
+06-email-b2b.txt,96,14,zerogpt.com,Y,
+07-linkedin-post.txt,100,0,zerogpt.com,Y,
+08-howto-homeoffice.txt,100,27,zerogpt.com,Y,
+09-listicle-finance.txt,100,12,zerogpt.com,Y,
+10-faq-support.txt,100,11,zerogpt.com,Y,
+11-coverletter.txt,100,20,zerogpt.com,Y,
+12-business-report.txt,100,21,zerogpt.com,Y,数字抽查：$4.2M/12%/8%/62%/94%/5%/$680K 全部保留
+13-news-tech.txt,100,0,zerogpt.com,Y,
+14-course-description.txt,100,52,zerogpt.com,Y,未过线
+15-realestate-listing.txt,100,8,zerogpt.com,Y,
+16-restaurant-review.txt,100,75,zerogpt.com,Y,未过线
+17-travel-guide.txt,100,43,zerogpt.com,Y,差3分未过线
+18-health-sleep.txt,100,66,zerogpt.com,Y,未过线
+19-finance-compound.txt,100,24,zerogpt.com,Y,数字抽查：全部保留
+20-blog-conclusion.txt,100,13,zerogpt.com,Y,
+
+## 判定记录（2026-09-22）
+# 提示词版本：v2（v1 备份于 prompts/humanizer-system-v1-backup.txt）
+# 通过条数（after < 40）：16/20 —— ≥14，检查点① 正式通过
+# before 平均：99.8 | after 平均：24.7（平均降分 75 点）
+# 未达标 4 条均为描述/推广类文风：14 课程介绍、16 餐厅评测、17 旅行指南（差3分）、18 健康科普
+# 后续动作：开工建站（03 文档第 1 周）；对 4 类薄弱文风在产品内做模式专属调优

@@ -1,0 +1,9 @@
+Nexus Systems rolled out its next-gen AI chip yesterday. It's called the NX-5000. Big deal for them — they want to own the AI hardware market, and that market moves fast.
+
+The chip supposedly packs up to three times the processing power of the old one. Uses 40% less energy too. Analysts like it. Cheaper data centers, basically, all over the world.
+
+And look, there's a security angle. Nexus says the NX-5000 has new features built in to tackle data privacy worries and system flaws. CEO Jennifer Zhao, speaking at a press conference at headquarters, said the launch caps over three years of R&D. More than 400 engineers. Five countries.
+
+Commercial customers should get it by Q2 next year. Pricing? Not yet. That comes closer to launch.
+
+Honestly, the efficiency gains are the part people care about most.

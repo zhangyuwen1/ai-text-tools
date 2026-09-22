@@ -1,0 +1,21 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment variables / secrets
+.dev.vars
+.env
+.env.*
+
+# wrangler local state
+.wrangler/
+
+# OS
+.DS_Store
+Thumbs.db

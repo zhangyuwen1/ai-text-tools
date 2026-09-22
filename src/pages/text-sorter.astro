@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Text Sorter — Sort Lines A–Z and Remove Duplicates Online"
+  description="Sort any list alphabetically or by length, remove duplicate lines, trim whitespace, and delete empty lines — free, instant, and private. Runs entirely in your browser."
+>
+  <h1 class="text-3xl font-extrabold tracking-tight">Text Sorter</h1>
+  <p class="mt-3 text-slate-600 leading-relaxed">
+    Sort any list alphabetically or by length, remove duplicate lines, trim whitespace, and
+    delete empty lines — free, instant, and private. Everything runs in your browser;
+    nothing is uploaded.
+  </p>
+
+  <div class="mt-6">
+    <textarea
+      id="input"
+      rows="10"
+      placeholder="Paste one item per line…"
+      class="w-full rounded-xl border border-slate-300 p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
+
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button data-op="az" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort A → Z</button>
+      <button data-op="za" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort Z → A</button>
+      <button data-op="len" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">Sort by length</button>
+      <button data-op="dedupe" class="rounded-lg bg-slate-700 px-3 py-2 text-sm font-medium text-white hover:bg-slate-600">Remove duplicates</button>
+      <button data-op="clean" class="rounded-lg bg-slate-700 px-3 py-2 text-sm font-medium text-white hover:bg-slate-600">Trim + drop empty lines</button>
+      <button data-op="reverse" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-indigo-400 bg-white">Reverse order</button>
+      <button id="copy" class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:border-indigo-400 bg-white">Copy result</button>
+    </div>
+
+    <textarea
+      id="output"
+      rows="10"
+      readonly
+      placeholder="Sorted text appears here…"
+      class="mt-4 w-full rounded-xl border border-slate-300 p-4 font-mono text-sm bg-slate-100"></textarea>
+
+    <p id="report" class="mt-2 text-sm text-slate-500"></p>
+  </div>
+
+  <section class="mt-10">
+    <h2 class="text-xl font-bold">FAQ</h2>
+    <div class="mt-3 space-y-4 text-slate-700">
+      <div>
+        <h3 class="font-semibold">Does sorting change letter case?</h3>
+        <p class="text-sm text-slate-600">No, your lines are returned exactly as typed. Sorting compares them case-insensitively, so "apple" and "Apple" sort next to each other.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold">How does duplicate removal work?</h3>
+        <p class="text-sm text-slate-600">The first occurrence of each line is kept and later exact duplicates are dropped. Compare ignoring surrounding spaces by running "Trim + drop empty lines" first.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="mt-8 text-sm text-slate-500">
+    Also try: <a href="/remove-line-breaks" class="text-indigo-700 underline">remove line breaks</a> or
+    <a href="/case-converter" class="text-indigo-700 underline">case converter</a>.
+  </p>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('input') as HTMLTextAreaElement;
+  const output = document.getElementById('output') as HTMLTextAreaElement;
+  const report = document.getElementById('report')!;
+
+  const ops: Record<string, (lines: string[]) => string[]> = {
+    az: (l) => [...l].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })),
+    za: (l) => [...l].sort((a, b) => b.localeCompare(a, undefined, { sensitivity: 'base' })),
+    len: (l) => [...l].sort((a, b) => a.length - b.length),
+    dedupe: (l) => [...new Set(l)],
+    clean: (l) => l.map((x) => x.trim()).filter(Boolean),
+    reverse: (l) => [...l].reverse(),
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('button[data-op]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const before = input.value.split(/\r?\n/);
+      const after = ops[btn.dataset.op!](before);
+      output.value = after.join('\n');
+      const removed = before.length - after.length;
+      report.textContent =
+        `${before.length} lines in → ${after.length} lines out` + (removed > 0 ? ` (${removed} removed)` : '');
+    });
+  });
+
+  document.getElementById('copy')!.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    await navigator.clipboard.writeText(output.value);
+    const old = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => (btn.textContent = old), 1200);
+  });
+</script>

@@ -1,0 +1,7 @@
+I want the Senior Software Engineer job at your company. I've got six years in full-stack development, and I've shipped scalable stuff the whole time. My skills line up with what you need. So does my love of building new things.
+
+Leading complex projects? Done that, from first idea to launch. Working with cross-functional teams? That too. Honestly, that's most of the job.
+
+At my current gig, I led the move from our old monolithic architecture to a microservices-based setup. Big project. It boosted system performance by 45% and cut deployment times a lot. Deployment used to be painful. Not anymore.
+
+I never stop learning, which keeps me current on cloud-native development and machine learning integration. And look, your mission — using tech to solve meaningful problems — that's the part that grabbed me. I'd love to bring what I know to your engineering team.

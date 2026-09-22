@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# AI 搜索爬虫明确放行（GEO 策略，见 docs/05-SEO-GEO执行手册.md）
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+# 上线绑定正式域名后替换为真实地址
+# Sitemap: https://your-domain.com/sitemap.xml
