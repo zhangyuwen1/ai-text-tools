@@ -17,5 +17,5 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-# 上线绑定正式域名后替换为真实地址
-# Sitemap: https://your-domain.com/sitemap.xml
+# 上线绑定正式域名后生效
+Sitemap: https://textkitai.com/sitemap-index.xml

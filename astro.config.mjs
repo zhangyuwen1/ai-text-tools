@@ -1,12 +1,14 @@
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-// 静态优先 + 按需服务端路由（API 端点与 /r/[id] 声明 prerender = false）。
-// imageService passthrough：workers 环境无 sharp，本站也不用 Astro 资产图片。
+// 正式域名：textkitai.com（腾讯云注册，DNS 托管 Cloudflare，站点托管 Pages）
 export default defineConfig({
+  site: 'https://textkitai.com',
   adapter: cloudflare({ imageService: 'passthrough' }),
   output: 'static',
+  integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],
   },
