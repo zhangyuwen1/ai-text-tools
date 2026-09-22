@@ -4,6 +4,13 @@ import Icon from '../components/Icon.astro';
 
 const tools = [
   {
+    href: '/ai-detector',
+    title: 'AI Detector',
+    desc: 'Check how likely any text was written by AI — sentence-by-sentence highlighting, shareable report.',
+    icon: 'scan',
+    chip: 'bg-rose-50 text-rose-600',
+  },
+  {
     href: '/word-counter',
     title: 'Word Counter',
     desc: 'Count words, characters, sentences, paragraphs, reading time, and keyword density.',
@@ -70,8 +77,8 @@ const tools = [
       <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
         <Icon name="sparkles" class="h-6 w-6" />
       </span>
-      <h2 class="mt-4 font-bold text-lg text-zinc-400">AI Detector & AI Humanizer</h2>
-      <p class="mt-1 text-sm text-zinc-400">Coming soon — check any text for AI, then make it sound human.</p>
+      <h2 class="mt-4 font-bold text-lg text-zinc-400">AI Humanizer</h2>
+      <p class="mt-1 text-sm text-zinc-400">Coming soon — make AI text sound genuinely human.</p>
     </div>
   </section>
 </BaseLayout>

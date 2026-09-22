@@ -1,0 +1,228 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout
+  title="AI Detector — Check If Text Was Written by AI, Free"
+  description="Paste any text to see how likely it was written by AI. Free, no signup, with sentence-by-sentence highlighting and a shareable report. Runs instantly in your browser."
+>
+  <div class="flex items-center gap-3">
+    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+      <Icon name="scan" class="h-6 w-6" />
+    </span>
+    <h1 class="text-3xl font-extrabold tracking-tight">AI Detector</h1>
+  </div>
+  <p class="mt-3 text-zinc-600 leading-relaxed">
+    Paste any text below to see how likely it was written by AI. Free, no signup, with
+    sentence-by-sentence highlighting and a shareable report. Scores are a probability
+    estimate, not proof — use them as one signal, not a verdict.
+  </p>
+
+  <div class="mt-6">
+    <textarea
+      id="input"
+      rows="10"
+      placeholder="Paste at least 50 words of text here…"
+      class="w-full rounded-xl border border-zinc-300 p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"></textarea>
+
+    <div class="mt-3 flex flex-wrap items-center gap-3">
+      <button id="check" class="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700">
+        <Icon name="scan" class="h-4 w-4" /><span>Check text</span>
+      </button>
+      <span id="wordcount" class="text-sm text-zinc-500">0 words</span>
+      <span id="quota" class="ml-auto text-sm text-zinc-500"></span>
+    </div>
+    <p id="error" class="mt-2 hidden text-sm text-rose-600"></p>
+  </div>
+
+  <!-- 结果区 -->
+  <div id="result" class="mt-8 hidden">
+    <div class="rounded-2xl border border-zinc-200 bg-white p-6">
+      <div class="flex flex-col sm:flex-row items-center gap-6">
+        <div class="relative h-32 w-32 shrink-0">
+          <svg viewBox="0 0 120 120" class="h-32 w-32 -rotate-90">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#e4e4e7" stroke-width="10" />
+            <circle id="ring" cx="60" cy="60" r="52" fill="none" stroke="#e11d48" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="score" class="text-3xl font-extrabold">–</span>
+            <span class="text-[10px] text-zinc-500 uppercase tracking-wide">AI score</span>
+          </div>
+        </div>
+        <div class="text-center sm:text-left">
+          <h2 id="verdict" class="text-xl font-bold">–</h2>
+          <p id="meta" class="mt-1 text-sm text-zinc-500"></p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button id="share" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-800 hover:border-zinc-900 bg-white">
+              <Icon name="copy" class="h-4 w-4" /><span>Create share link</span>
+            </button>
+            <a id="cta" href="/ai-humanizer" class="hidden inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
+              Make it sound human <Icon name="arrow-right" class="h-4 w-4" />
+            </a>
+          </div>
+          <a id="sharelink" href="#" target="_blank" class="mt-2 hidden text-sm text-emerald-700 underline break-all"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 rounded-2xl border border-zinc-200 bg-white p-6">
+      <h2 class="font-bold">Sentence breakdown</h2>
+      <p class="text-xs text-zinc-500 mt-0.5">Red = likely AI · Amber = mixed · Green = likely human</p>
+      <div id="sentences" class="mt-4 space-y-2 text-sm leading-relaxed"></div>
+    </div>
+  </div>
+
+  <section class="mt-10">
+    <h2 class="text-xl font-bold">FAQ</h2>
+    <div class="mt-3 space-y-4 text-zinc-800">
+      <div>
+        <h3 class="font-semibold">How accurate is AI detection?</h3>
+        <p class="text-sm text-zinc-600">No detector is definitive. Results are probabilistic and can misjudge formulaic human writing and lightly edited AI text. Treat the score as one signal, never as proof.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold">Is my text stored?</h3>
+        <p class="text-sm text-zinc-600">Detection itself stores nothing. Text is saved for 7 days only if you click "Create share link", and only you get that link.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold">How many free checks do I get?</h3>
+        <p class="text-sm text-zinc-600">Five checks per day, up to 500 words each, no signup required.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="mt-8 text-sm text-zinc-500">
+    Flagged as AI? Try the <a href="/ai-humanizer" class="text-emerald-700 underline">AI Humanizer</a> (coming soon).
+    Also see <a href="/word-counter" class="text-emerald-700 underline">word counter</a>.
+  </p>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('input') as HTMLTextAreaElement;
+  const checkBtn = document.getElementById('check')!;
+  const wordcount = document.getElementById('wordcount')!;
+  const quota = document.getElementById('quota')!;
+  const errorEl = document.getElementById('error')!;
+  const resultEl = document.getElementById('result')!;
+
+  const FLAG_STYLE: Record<string, string> = {
+    high: 'bg-rose-50 border-l-2 border-rose-400 text-rose-900',
+    mid: 'bg-amber-50 border-l-2 border-amber-400 text-amber-900',
+    low: 'bg-emerald-50 border-l-2 border-emerald-400 text-emerald-900',
+  };
+
+  const VERDICTS: Record<string, { text: string; cls: string }> = {
+    ai: { text: 'Likely AI-generated', cls: 'text-rose-600' },
+    mixed: { text: 'Mixed signals', cls: 'text-amber-600' },
+    human: { text: 'Likely human-written', cls: 'text-emerald-600' },
+  };
+
+  function updateCount() {
+    const n = input.value.trim() ? input.value.trim().split(/\s+/).length : 0;
+    wordcount.textContent = `${n} words${n > 0 && n < 50 ? ` (${50 - n} more needed)` : ''}`;
+  }
+  input.addEventListener('input', updateCount);
+  updateCount();
+
+  checkBtn.addEventListener('click', async () => {
+    errorEl.classList.add('hidden');
+    const label = checkBtn.querySelector('span')!;
+    const old = label.textContent;
+    label.textContent = 'Checking…';
+    checkBtn.setAttribute('disabled', '');
+
+    try {
+      const res = await fetch('/api/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input.value }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorEl.textContent = data?.error?.message ?? 'Something went wrong.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      render(data);
+    } catch {
+      errorEl.textContent = 'Network error — please try again.';
+      errorEl.classList.remove('hidden');
+    } finally {
+      label.textContent = old;
+      checkBtn.removeAttribute('disabled');
+      if (typeof data !== 'undefined' && data?.remaining !== undefined) {
+        quota.textContent = `${data.remaining + 1 > 0 ? data.remaining : 0} of 5 free checks left today`;
+      }
+    }
+  });
+
+  interface Sent { offset: number; len: number; flag: string }
+  let lastSentences: { text: string; flag: string }[] = [];
+  let lastScore = 0;
+
+  function render(data: { score: number; label: string; words: number; sentences: Sent[]; remaining: number }) {
+    lastScore = data.score;
+    lastSentences = data.sentences.map((s) => ({
+      text: input.value.slice(s.offset, s.offset + s.len).trim(),
+      flag: s.flag,
+    }));
+
+    // 评分环
+    const ring = document.getElementById('ring')!;
+    const circumference = 2 * Math.PI * 52;
+    ring.style.strokeDashoffset = String(circumference * (1 - data.score));
+    ring.setAttribute('stroke', data.score > 0.7 ? '#e11d48' : data.score >= 0.4 ? '#d97706' : '#059669');
+    document.getElementById('score')!.textContent = `${Math.round(data.score * 100)}%`;
+
+    const v = VERDICTS[data.label];
+    const verdict = document.getElementById('verdict')!;
+    verdict.textContent = v.text;
+    verdict.className = `text-xl font-bold ${v.cls}`;
+    document.getElementById('meta')!.textContent = `${data.words} words · ${data.sentences.length} sentences`;
+    quota.textContent = `${data.remaining} of 5 free checks left today`;
+
+    // 逐句高亮
+    document.getElementById('sentences')!.innerHTML = lastSentences
+      .map((s) => `<p class="rounded-r-lg px-3 py-2 ${FLAG_STYLE[s.flag] ?? ''}">${escapeHtml(s.text)}</p>`)
+      .join('');
+
+    // 转化钩子：高分时显示人性化 CTA
+    document.getElementById('cta')!.classList.toggle('hidden', data.score <= 0.7);
+    document.getElementById('sharelink')!.classList.add('hidden');
+
+    resultEl.classList.remove('hidden');
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('share')!.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const label = btn.querySelector('span')!;
+    const old = label.textContent;
+    label.textContent = 'Creating…';
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input.value, score: lastScore, sentences: lastSentences }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message);
+      const link = document.getElementById('sharelink')! as HTMLAnchorElement;
+      link.href = data.url;
+      link.textContent = `${location.origin}${data.url}`;
+      link.classList.remove('hidden');
+      await navigator.clipboard.writeText(`${location.origin}${data.url}`).catch(() => {});
+      label.textContent = 'Copied!';
+      setTimeout(() => (label.textContent = old), 1500);
+    } catch (err) {
+      label.textContent = 'Failed';
+      setTimeout(() => (label.textContent = old), 1500);
+    }
+  });
+
+  function escapeHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+</script>
