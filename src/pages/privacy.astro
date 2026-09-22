@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Privacy Policy — TextKit AI"
+  description="How TextKit AI handles your data: your text is processed in the moment and discarded, accounts need only an email, and payments are handled by our merchant of record."
+>
+  <h1 class="text-3xl font-extrabold tracking-tight">Privacy Policy</h1>
+  <p class="text-sm text-zinc-400">Last updated: September 22, 2026</p>
+
+  <div class="mt-6 space-y-6 text-zinc-700 leading-relaxed">
+    <section>
+      <h2 class="font-bold text-lg">Your text</h2>
+      <p class="mt-1 text-sm">Text you paste into the AI Detector, Humanizer, or any tool is processed in the moment to produce your result, and then discarded. We do not store, log, train on, or share your text. Batch file scanning happens entirely in your browser — those files never leave your device. The only exception: if you deliberately click "Create share link", that text is saved for 7 days so the link can work, then automatically deleted.</p>
+    </section>
+
+    <section>
+      <h2 class="font-bold text-lg">Accounts</h2>
+      <p class="mt-1 text-sm">An account requires only an email address, used to send sign-in links and subscription receipts. We store your email, subscription status, and usage counters (e.g., "3 checks used today") — nothing else. No passwords are stored.</p>
+    </section>
+
+    <section>
+      <h2 class="font-bold text-lg">Payments</h2>
+      <p class="mt-1 text-sm">Payments are processed by our merchant of record. We never see or store your card details. The merchant sends us only what's needed to activate your subscription: your email and subscription status.</p>
+    </section>
+
+    <section>
+      <h2 class="font-bold text-lg">Cookies</h2>
+      <p class="mt-1 text-sm">We set one essential cookie (<code>tk_session</code>) to keep you signed in. We use privacy-friendly, aggregate analytics and do not run advertising trackers.</p>
+    </section>
+
+    <section>
+      <h2 class="font-bold text-lg">Contact</h2>
+      <p class="mt-1 text-sm">Privacy questions: <a href="mailto:support@textkitai.com" class="text-emerald-700 underline">support@textkitai.com</a></p>
+    </section>
+  </div>
+</BaseLayout>
