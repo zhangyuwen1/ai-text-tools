@@ -6,12 +6,12 @@ import { callLLM, LLMNotConfiguredError } from '../../lib/llm';
 import { buildHumanizeSystemPrompt, type Mode, type Strength } from '../../lib/prompts';
 import { getRuntimeEnv, bumpRateLimit } from '../../lib/store';
 import { verifyTurnstile } from '../../lib/turnstile';
+import { getSessionUser } from '../../lib/auth';
+import { quotaFor, type Tier } from '../../lib/quota';
 
 export const prerender = false;
 
 const MIN_WORDS = 50;
-const MAX_WORDS_ANON = 300;
-const DAILY_LIMIT = 3; // PRD §4.2 匿名档
 
 const MODES: Mode[] = ['standard', 'academic', 'casual', 'creative'];
 const STRENGTHS: Strength[] = ['light', 'balanced', 'strong'];
@@ -24,8 +24,13 @@ function err(code: string, message: string, status: number): Response {
   return json({ error: { code, message } }, status);
 }
 
-export const POST: APIRoute = async ({ request, locals, clientIp }) => {
+export const POST: APIRoute = async ({ request, locals, clientIp, cookies }) => {
   const env = getRuntimeEnv(locals);
+
+  // 用户层级：Pro → 登录免费 → 匿名
+  const user = await getSessionUser(env, cookies.get('tk_session')?.value);
+  const tier: Tier = user?.plan === 'pro' ? 'pro' : user ? 'free' : 'anon';
+  const quota = quotaFor('humanize', tier);
 
   let payload: { text?: string; mode?: string; strength?: string; turnstileToken?: string };
   try {
@@ -42,8 +47,14 @@ export const POST: APIRoute = async ({ request, locals, clientIp }) => {
   if (words < MIN_WORDS) {
     return err('TEXT_TOO_SHORT', `Text is too short — at least ${MIN_WORDS} words required (got ${words}).`, 400);
   }
-  if (words > MAX_WORDS_ANON) {
-    return err('TEXT_TOO_LONG', `Free rewrites are limited to ${MAX_WORDS_ANON} words.`, 400);
+  if (words > quota.maxWords) {
+    return err(
+      'TEXT_TOO_LONG',
+      tier === 'pro'
+        ? `Rewrites are limited to ${quota.maxWords} words.`
+        : `Free rewrites are limited to ${quota.maxWords} words — Pro raises this to 10,000.`,
+      400,
+    );
   }
 
   if (!(await verifyTurnstile(env as never, payload.turnstileToken, clientIp))) {
@@ -51,9 +62,20 @@ export const POST: APIRoute = async ({ request, locals, clientIp }) => {
   }
 
   const ip = clientIp ?? 'unknown';
-  const rl = await bumpRateLimit(env, ip, DAILY_LIMIT, 'humanize');
-  if (!rl.allowed) {
-    return err('RATE_LIMITED', 'You have used all 3 free rewrites for today. Come back tomorrow.', 429);
+  let remaining: number;
+  if (tier === 'pro') {
+    remaining = -1; // -1 = 无限（JSON 无法序列化 Infinity）
+  } else {
+    const kind = tier === 'free' ? 'humanize-free' : 'humanize';
+    const rl = await bumpRateLimit(env, `${kind}:${user?.userId ?? ip}`, quota.daily, kind);
+    if (!rl.allowed) {
+      return err(
+        'RATE_LIMITED',
+        `You've used all ${quota.daily} free rewrites for today. Upgrade to Pro for unlimited rewrites — or come back tomorrow.`,
+        429,
+      );
+    }
+    remaining = rl.remaining;
   }
 
   try {
@@ -77,7 +99,8 @@ export const POST: APIRoute = async ({ request, locals, clientIp }) => {
       beforeScore: Math.round(before.score * 100) / 100,
       afterScore: Math.round(after.score * 100) / 100,
       words: result.split(/\s+/).length,
-      remaining: rl.remaining,
+      remaining,
+      tier,
     });
   } catch (e) {
     if (e instanceof LLMNotConfiguredError) {

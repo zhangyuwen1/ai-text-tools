@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout
+  title="Pricing — TextKit AI Pro, $4.99/month"
+  description="TextKit AI Pro: unlimited AI detection and humanizing, up to 30,000 words per check, priority speed. $4.99/month or $39/year. Cancel anytime."
+>
+  <h1 class="text-3xl font-extrabold tracking-tight">Pricing</h1>
+  <p class="mt-3 text-zinc-600 leading-relaxed max-w-xl">
+    Everything on TextKit AI is free to start. Pro removes the daily limits and unlocks
+    long-form documents — for the price of a coffee.
+  </p>
+
+  <div class="mt-8 grid gap-4 sm:grid-cols-2">
+    <!-- Free -->
+    <div class="rounded-2xl border border-zinc-200 bg-white p-6">
+      <h2 class="font-bold text-lg">Free</h2>
+      <p class="mt-1 text-3xl font-extrabold">$0</p>
+      <ul class="mt-4 space-y-2 text-sm text-zinc-600">
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> 5 AI checks / day</li>
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> 3 humanizer rewrites / day</li>
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> Unlimited browser tools & batch scanning</li>
+      </ul>
+      <p class="mt-4 text-xs text-zinc-400">No signup needed.</p>
+    </div>
+
+    <!-- Pro -->
+    <div class="relative rounded-2xl border-2 border-zinc-900 bg-white p-6">
+      <span class="absolute -top-3 right-4 rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">Save 35%</span>
+      <h2 class="font-bold text-lg">Pro</h2>
+      <p class="mt-1"><span class="text-3xl font-extrabold">$4.99</span><span class="text-zinc-500">/month</span></p>
+      <p class="text-sm text-zinc-400">or $39/year</p>
+      <ul class="mt-4 space-y-2 text-sm text-zinc-600">
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> <strong>Unlimited</strong> checks & rewrites</li>
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> Up to 30,000 words per check</li>
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> All humanizer modes & strengths</li>
+        <li class="flex gap-2"><Icon name="check" class="h-4 w-4 text-emerald-600 shrink-0" /> Cancel anytime</li>
+      </ul>
+
+      <!-- 登录/升级流程 -->
+      <div class="mt-5" id="pro-box">
+        <label for="email" class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Your email</label>
+        <div class="mt-1.5 flex gap-2">
+          <input id="email" type="email" placeholder="you@example.com" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <button id="btn-login" class="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700">Send link</button>
+        </div>
+        <p id="login-msg" class="mt-2 hidden text-sm text-zinc-600"></p>
+        <div class="mt-3 flex gap-2">
+          <button data-plan="monthly" class="btn-upgrade flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">Get Pro — $4.99/mo</button>
+          <button data-plan="yearly" class="btn-upgrade flex-1 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-800 hover:border-zinc-900 bg-white">Get Pro — $39/yr</button>
+        </div>
+        <p id="pay-msg" class="mt-2 hidden text-sm text-zinc-600"></p>
+      </div>
+    </div>
+  </div>
+
+  <p class="mt-8 text-sm text-zinc-500">
+    Questions? Payment handled by a merchant of record — VAT/sales tax included, invoices provided.
+  </p>
+</BaseLayout>
+
+<script>
+  const emailInput = document.getElementById('email') as HTMLInputElement;
+  const loginBtn = document.getElementById('btn-login')!;
+  const loginMsg = document.getElementById('login-msg')!;
+
+  loginBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    if (!email) return;
+    loginBtn.setAttribute('disabled', '');
+    loginMsg.textContent = 'Sending…';
+    loginMsg.classList.remove('hidden');
+    const res = await fetch('/api/auth/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      loginMsg.textContent = data.devMode
+        ? 'Dev mode: sign-in link printed to server console. (Configure RESEND_API_KEY for real email.)'
+        : 'Check your inbox — we sent a sign-in link (valid 15 minutes).';
+    } else {
+      loginMsg.textContent = data?.error?.message ?? 'Something went wrong.';
+    }
+    loginBtn.removeAttribute('disabled');
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.btn-upgrade').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const plan = btn.dataset.plan as 'monthly' | 'yearly';
+      const payMsg = document.getElementById('pay-msg')!;
+      btn.setAttribute('disabled', '');
+      payMsg.textContent = 'Starting checkout…';
+      payMsg.classList.remove('hidden');
+      const res = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        location.href = data.url;
+      } else if (res.status === 401) {
+        payMsg.textContent = 'First, request a sign-in link with your email above, then come back and click Upgrade.';
+        btn.removeAttribute('disabled');
+      } else {
+        payMsg.textContent = data?.error?.message ?? 'Checkout failed.';
+        btn.removeAttribute('disabled');
+      }
+    });
+  });
+</script>

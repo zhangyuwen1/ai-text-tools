@@ -8,6 +8,9 @@ interface Env {
   DETECT_PROVIDER?: string;
   DEEPSEEK_API_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
+  PAY_PROVIDER?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
 }
 
 const memory = new Map<string, string>();
