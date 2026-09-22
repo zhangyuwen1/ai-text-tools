@@ -5,6 +5,9 @@
 interface Env {
   RATE_LIMIT?: { get(key: string): Promise<string | null>; put(key: string, v: string, opts?: { expirationTtl?: number }): Promise<void> };
   SHARE?: { get(key: string): Promise<string | null>; put(key: string, v: string, opts?: { expirationTtl?: number }): Promise<void> };
+  DETECT_PROVIDER?: string;
+  DEEPSEEK_API_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
 }
 
 const memory = new Map<string, string>();
@@ -46,8 +49,13 @@ export function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function bumpRateLimit(env: Env | undefined, ip: string, limit: number): Promise<{ allowed: boolean; remaining: number }> {
-  const key = `rl:${ip}:${todayKey()}`;
+export async function bumpRateLimit(
+  env: Env | undefined,
+  ip: string,
+  limit: number,
+  kind = 'detect',
+): Promise<{ allowed: boolean; remaining: number }> {
+  const key = `rl:${kind}:${ip}:${todayKey()}`;
   const current = parseInt((await kvGet(env, 'RATE_LIMIT', key)) ?? '0', 10);
   if (current >= limit) return { allowed: false, remaining: 0 };
   await kvPut(env, 'RATE_LIMIT', key, String(current + 1), 86400);

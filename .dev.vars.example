@@ -1,0 +1,2 @@
+# 复制为 .dev.vars 并填入真实值（.dev.vars 已被 git 忽略）
+DEEPSEEK_API_KEY=sk-xxxx

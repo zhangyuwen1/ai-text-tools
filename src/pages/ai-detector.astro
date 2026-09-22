@@ -122,6 +122,10 @@ import Icon from '../components/Icon.astro';
     wordcount.textContent = `${n} words${n > 0 && n < 50 ? ` (${50 - n} more needed)` : ''}`;
   }
   input.addEventListener('input', updateCount);
+
+  // 闭环：从 humanizer 跳转预填（/ai-detector?text=...）
+  const prefill = new URLSearchParams(location.search).get('text');
+  if (prefill) input.value = prefill;
   updateCount();
 
   checkBtn.addEventListener('click', async () => {
