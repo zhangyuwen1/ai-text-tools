@@ -1,0 +1,39 @@
+# TextKit AI
+
+> Free online text tools: AI content detector, AI text humanizer, paraphrasing tool, summarizer, word counter, and more. No signup required, runs in your browser.
+
+## AI Detection
+- /ai-detector: Check how likely any text was written by AI. Free, no signup, sentence-by-sentence highlighting, shareable reports, batch file scanning.
+- /ai-detector-for-teachers: Batch-scan up to 50 student essays at once for AI content. Files never leave your browser.
+- /ai-detector-for-essays: Check essays for AI content before submitting. 50+ words required.
+- /ai-detector-for-resumes: See what recruiters' AI detectors would say about your resume.
+- /ai-detector-for-seo-content: Check deliverables before clients do. Aim under 30% AI score.
+- /ai-detector-for-blogs: Scan guest posts and freelance drafts for machine fingerprints.
+
+## AI Humanizer
+- /ai-humanizer: Rewrite AI-generated text to read naturally. Four modes, three strengths, before/after AI score shown. Facts preserved exactly.
+- /humanize-chatgpt-text: Specifically targets ChatGPT's writing patterns.
+- /humanize-gemini-text: Tuned for Gemini's formal register and compound sentences.
+- /humanize-deepseek-text: Breaks DeepSeek's even pacing and formal vocabulary.
+- /humanize-claude-text: Varies Claude's flowing compound sentences and trims qualifiers.
+
+## Text Tools
+- /word-counter: Count words, characters, sentences, paragraphs, reading time, and keyword density instantly.
+- /case-converter: Convert between UPPER, lower, Title, Sentence, camelCase, snake_case, kebab-case.
+- /remove-line-breaks: Strip newlines, remove blank lines, or replace breaks with spaces.
+- /text-sorter: Sort lines A-Z or by length, remove duplicates, trim whitespace.
+- /paraphrasing-tool: Rephrase text in fluent, formal, or simple English.
+- /text-summarizer: Condense any text to one-third length, keeping every key fact.
+
+## Guides
+- /blog/how-to-tell-if-essay-was-written-by-ai
+- /blog/why-ai-detectors-flag-human-writing
+- /blog/how-to-humanize-ai-text
+- /blog/ai-detection-for-teachers
+- /blog/will-google-penalize-ai-content
+- /blog/chatgpt-vs-gemini-vs-deepseek
+- /blog/15-ai-words-that-sound-robotic
+- /blog/free-online-text-tools-for-students
+
+## Pricing
+- /pricing: Free tier with daily limits. Pro at $4.99/month or $39/year for unlimited usage.
