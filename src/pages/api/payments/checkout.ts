@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     return json({ error: { code: 'LOGIN_REQUIRED', message: 'Enter your email first — we sent you a sign-in link.' } }, 401);
   }
 
-  const provider = getPayments(env?.PAY_PROVIDER);
+  const provider = getPayments(env?.PAY_PROVIDER, env as never);
   try {
     const { url } = await provider.createCheckout({ plan, email: user.email, userId: user.userId });
     return json({ url });

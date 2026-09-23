@@ -11,15 +11,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = getRuntimeEnv(locals);
   const rawBody = await request.text();
 
-  const provider = getPayments(env?.PAY_PROVIDER);
-  let event;
+  const provider = getPayments(env?.PAY_PROVIDER, env as never);
+  let parsed;
   try {
-    event = await provider.parseWebhook(request, rawBody);
+    parsed = await provider.parseWebhook(request, rawBody);
   } catch (e) {
     console.error('[webhook] parse error:', e);
     return new Response('provider not ready', { status: 501 });
   }
-  if (!event) return new Response('invalid payload', { status: 400 });
+  if (!parsed.ok) return new Response('invalid payload', { status: 400 });
+  if (!parsed.event) return new Response(JSON.stringify({ ok: true, ignored: true }), { headers: { 'Content-Type': 'application/json' } });
+
+  const event = parsed.event;
 
   const status =
     event.type === 'subscription.active' ? 'active' : event.type === 'subscription.canceled' ? 'canceled' : 'past_due';
