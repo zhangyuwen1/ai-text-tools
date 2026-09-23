@@ -9,6 +9,8 @@ export default defineConfig({
   adapter: cloudflare({ imageService: 'passthrough' }),
   output: 'static',
   integrations: [sitemap()],
+  trailingSlash: 'never',
+  build: { format: 'file' },
   vite: {
     plugins: [tailwindcss()],
   },
