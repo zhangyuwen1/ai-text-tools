@@ -8,7 +8,9 @@ export default defineConfig({
   site: 'https://textkitai.com',
   adapter: cloudflare({ imageService: 'passthrough' }),
   output: 'static',
-  integrations: [sitemap()],
+  integrations: [sitemap({
+    filter: (page) => !page.includes('/account') && !page.includes('/dev/') && !page.includes('/r/'),
+  })],
   trailingSlash: 'never',
   build: { format: 'file' },
   vite: {
